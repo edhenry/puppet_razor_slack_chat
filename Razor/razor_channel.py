@@ -5,8 +5,8 @@ import json
 import sys
 
 class razor_api():
-    def __init__(self, razor_server):
 
+    def __init__(self, razor_server):
         self.razor_server = razor_server
         self.all_razor_nodes()
         self.razor_single_node()
