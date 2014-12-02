@@ -1,22 +1,27 @@
+#!/usr/bin/python
+
 __author__ = 'edhenry'
 
-from Razor import razor_channel
-from Slack import slack_channel
+from Razor.razor_channel import razor_api
+from Slack.slack_channel import slack_api
 import json
 import sys
 import ast
 
 #Webhook URL assigned when creating an integration in the slack web portal
-slack_url = ''
+slack_url = 'ENTER SLACK URL HERE'
 
-def all_nodes():
+def all_nodes(ip, port):
+
+    #Create the Razor server address
+    server = str(ip) + ':' + str(port)
 
     #Instantiates the razor_api object
-    n = razor_channel.razor_api(razor_server='172.15.1.12:8080')
+    razor_channel = razor_api(razor_server=server)
 
-    #Instantiates the razor api object
-    nodes = n.all_razor_nodes()
-
+    #Pull all the nodes from Razor
+    nodes = razor_channel.all_razor_nodes()
+    
     #Instantiate list to populate with list of nodes from Razor
     node_list = []
 
@@ -27,17 +32,22 @@ def all_nodes():
     #Variable definition for message to post to slack
     message = "Nodes currently being managed by Puppet Razor: " + str(node_list)
 
-    #Instantiate post object and pass in proper arguments for posting to slack channel
-    return slack_channel.post_to_slack(channel='ed-integration-tests', username='integration-bot', icon='',
-                                             message=message, url=slack_url)
+    #Define the slack channel to send the message out on
+    slack_channel = slack_api(channel='ed-integration-tests', username='integration-bot-ed', icon='', url=slack_url)
 
-def single_node():
+    #Post your message to the slack channel
+    return slack_channel.post_to_slack(message)
+
+def single_node(ip, port):
+
+    #Create the Razor server address
+    server = str(ip) + ':' + str(port)
 
     #Instantiates the razor_api object
-    n = razor_channel.razor_api(razor_server='172.15.1.12:8080')
+    razor_channel = razor_api(razor_server=server)
 
-    #Instantiates the razor api object
-    node = n.razor_single_node(node_name=sys.argv[1])
+    #Pull a single node from Razor
+    node = razor_channel.razor_single_node(node_name=sys.argv[1])
 
     #converts razor api_call to python object
     node_list = json.dumps(node['facts'])
@@ -54,10 +64,13 @@ def single_node():
     #Variable definition for message to post to slack
     message = "Facts about %s: " % sys.argv[1] + str(fact_dict)
 
-    #Instantiate post object and pass in proper arguments for posting to slack channel
-    return slack_channel.post_to_slack(channel='ed-integration-tests', username='integration-bot', icon='',
-                                             message=message, url=slack_url)
+    #Define the slack channel to send the message out on
+    slack_channel = slack_api(channel='ed-integration-tests', username='integration-bot-ed', icon='', url=slack_url)
 
-#all_nodes()
-single_node()
+    #Post your message to the slack channel
+    return slack_channel.post_to_slack(message)
+
+
+all_nodes('RAZOR SERVER', 'RAZOR SERVER PORT')
+#single_node('RAZOR SERVER', 'RAZOR SERVER PORT')
 
